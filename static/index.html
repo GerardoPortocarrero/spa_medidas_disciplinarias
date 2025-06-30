@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Registro de Sanciones</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 40px;
+      color: #2c3e50;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    header img {
+      width: 80px;
+      margin-right: 20px;
+    }
+
+    header h1 {
+      font-size: 28px;
+      color: #c4161c;
+      margin: 0;
+    }
+
+    .search-container {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    #search {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 25px;
+    }
+
+    select, button {
+      flex: 1 1 200px;
+      padding: 12px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      background-color: #c4161c;
+      color: white;
+      cursor: pointer;
+      flex: none;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    th {
+      background-color: #c4161c;
+      color: white;
+      padding: 12px;
+      text-align: left;
+    }
+
+    td {
+      padding: 12px;
+      border-top: 1px solid #eee;
+    }
+
+    tr:nth-child(even) {
+      background-color: #fafafa;
+    }
+
+    tr:hover {
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="static/logo.png" alt="Logo AYA">
+    <h1>AYA Distribuciones - Registro de Sanciones</h1>
+  </header>
+
+  <div class="search-container">
+    <input type="text" id="search" placeholder="Buscar por cualquier campo...">
+  </div>
+
+  <div class="filters">
+    <select id="detalleFilter">
+      <option value="">DETALLE</option>
+    </select>
+    <select id="sancionFilter">
+      <option value="">SANCION</option>
+    </select>
+    <select id="localidadFilter">
+      <option value="">LOCALIDAD</option>
+    </select>
+    <select id="cargoFilter">
+      <option value="">CARGO</option>
+    </select>
+    <button onclick="descargarCSV()">Descargar CSV</button>
+  </div>
+
+  <table id="data-table">
+    <thead></thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    let headers = [];
+    let rows = [];
+
+    async function cargarCSV() {
+      const response = await fetch("file.csv");
+      const text = await response.text();
+      const lines = text.trim().split("\n").filter(linea => linea.trim() !== "");
+      headers = lines[0].split(";").map(h => h.trim());
+      rows = lines.slice(1).map(l => l.split(";").map(c => c.trim()));
+    }
+
+    function renderTabla(datos) {
+      const thead = document.querySelector("#data-table thead");
+      const tbody = document.querySelector("#data-table tbody");
+
+      thead.innerHTML = "<tr>" + headers.map(h => `<th>${h}</th>`).join("") + "</tr>";
+      tbody.innerHTML = datos.map(row =>
+        "<tr>" + row.map(celda => `<td>${celda}</td>`).join("") + "</tr>"
+      ).join("");
+    }
+
+    function actualizarFiltros(columna, selectorId) {
+      const index = headers.indexOf(columna);
+      const selector = document.getElementById(selectorId);
+      const valores = [...new Set(rows.map(r => r[index]).filter(Boolean))].sort();
+      for (const val of valores) {
+        const opt = document.createElement("option");
+        opt.value = val;
+        opt.textContent = val;
+        selector.appendChild(opt);
+      }
+    }
+
+    function aplicarFiltros() {
+      const termino = document.getElementById("search").value.toLowerCase();
+      const filtros = {
+        "DETALLE": document.getElementById("detalleFilter").value,
+        "SANCION": document.getElementById("sancionFilter").value,
+        "LOCALIDAD": document.getElementById("localidadFilter").value,
+        "CARGO": document.getElementById("cargoFilter").value,
+      };
+
+      return rows.filter(row =>
+        Object.entries(filtros).every(([col, val]) => {
+          const i = headers.indexOf(col);
+          return val === "" || row[i] === val;
+        }) && row.some(celda => celda.toLowerCase().includes(termino))
+      );
+    }
+
+    function descargarCSV() {
+      const datos = aplicarFiltros();
+      let contenido = headers.join(";") + "\n";
+      contenido += datos.map(r => r.join(";")).join("\n");
+
+      const blob = new Blob([contenido], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", "sanciones_filtradas.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      await cargarCSV();
+      renderTabla(rows);
+      actualizarFiltros("DETALLE", "detalleFilter");
+      actualizarFiltros("SANCION", "sancionFilter");
+      actualizarFiltros("LOCALIDAD", "localidadFilter");
+      actualizarFiltros("CARGO", "cargoFilter");
+
+      document.getElementById("search").addEventListener("input", () => {
+        renderTabla(aplicarFiltros());
+      });
+
+      ["detalleFilter", "sancionFilter", "localidadFilter", "cargoFilter"].forEach(id => {
+        document.getElementById(id).addEventListener("change", () => {
+          renderTabla(aplicarFiltros());
+        });
+      });
+    });
+  </script>
+</body>
+</html>
