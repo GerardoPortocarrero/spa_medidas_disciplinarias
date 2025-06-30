@@ -56,35 +56,51 @@
     .filters {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 20px;
+      gap: 14px;
+      margin-bottom: 10px;
       align-items: center;
     }
 
     select {
-      flex: 1 1 200px;
-      padding: 12px;
+      flex: 1 1 180px;
+      padding: 12px 14px;
       font-size: 14px;
       border: 1px solid #ccc;
       border-radius: 6px;
+      background-color: #fff;
+      color: #2c3e50;
+      transition: border 0.2s, box-shadow 0.2s;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg fill='%232c3e50' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 16px 16px;
+    }
+
+    select:hover,
+    select:focus {
+      border-color: #c4161c;
+      box-shadow: 0 0 4px rgba(196, 22, 28, 0.3);
+      outline: none;
+    }
+
+    /* Solo en navegadores que lo permiten (como Chrome/Edge) */
+    select:focus option:checked {
+      background-color: #c4161c;
+      color: white;
+      font-weight: bold;
     }
 
     .download-container {
       text-align: right;
-      margin-bottom: 10px;
+      margin-bottom: 25px;
     }
 
     .download-link {
       color: #c4161c;
-      text-decoration: none;
-      font-weight: bold;
-      padding: 8px 12px;
-      border-radius: 4px;
-      transition: background-color 0.2s;
-    }
-
-    .download-link:hover {
-      background-color: #ffeaea;
+      text-decoration: underline;
+      font-size: 14px;
+      cursor: pointer;
     }
 
     table {
@@ -116,7 +132,6 @@
       background-color: #f0f0f0;
     }
 
-    /* Ocultar columna MES visualmente */
     th[data-col="MES"],
     td[data-col="MES"] {
       display: none;
@@ -137,25 +152,15 @@
   </div>
 
   <div class="filters">
-    <select id="mesFilter">
-      <option value="">MES</option>
-    </select>
-    <select id="detalleFilter">
-      <option value="">DETALLE</option>
-    </select>
-    <select id="sancionFilter">
-      <option value="">SANCION</option>
-    </select>
-    <select id="localidadFilter">
-      <option value="">LOCALIDAD</option>
-    </select>
-    <select id="cargoFilter">
-      <option value="">CARGO</option>
-    </select>
+    <select id="mesFilter"><option value="">MES</option></select>
+    <select id="detalleFilter"><option value="">DETALLE</option></select>
+    <select id="sancionFilter"><option value="">SANCION</option></select>
+    <select id="localidadFilter"><option value="">LOCALIDAD</option></select>
+    <select id="cargoFilter"><option value="">CARGO</option></select>
   </div>
 
   <div class="download-container">
-    <a href="#" class="download-link" onclick="descargarCSV()">Descargar CSV</a>
+    <a class="download-link" onclick="descargarCSV()">Descargar CSV</a>
   </div>
 
   <table id="data-table">
@@ -179,7 +184,7 @@
       const thead = document.querySelector("#data-table thead");
       const tbody = document.querySelector("#data-table tbody");
 
-      thead.innerHTML = "<tr>" + headers.map(h => 
+      thead.innerHTML = "<tr>" + headers.map(h =>
         `<th data-col="${h}">${h}</th>`).join("") + "</tr>";
 
       tbody.innerHTML = datos.map(row =>
