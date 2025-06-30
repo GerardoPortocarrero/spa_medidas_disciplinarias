@@ -4,10 +4,6 @@ import webbrowser
 import threading
 import time
 import locale
-from flask import Flask, Response, send_from_directory
-import pandas as pd
-import msoffcrypto
-from io import BytesIO
 
 # Módulos necesarios
 REQUIREMENTS = ["flask", "pandas", "openpyxl", "msoffcrypto-tool"]
@@ -26,6 +22,11 @@ def open_browser():
 # Instalar dependencias si faltan
 install_missing_packages()
 threading.Thread(target=open_browser).start()
+
+from flask import Flask, Response, send_from_directory
+import pandas as pd
+import msoffcrypto
+from io import BytesIO
 
 # Intentar establecer locale en español
 try:
