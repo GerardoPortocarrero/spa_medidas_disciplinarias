@@ -15,7 +15,7 @@
     header {
       display: flex;
       align-items: center;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
     }
 
     header img {
@@ -23,14 +23,24 @@
       margin-right: 20px;
     }
 
-    header h1 {
-      font-size: 28px;
+    .title-block {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .title-block h1 {
+      font-size: 26px;
       color: #c4161c;
       margin: 0;
     }
 
+    .title-block span {
+      font-size: 15px;
+      color: #7f8c8d;
+      margin-top: 4px;
+    }
+
     .search-container {
-      width: 100%;
       margin-bottom: 20px;
     }
 
@@ -47,10 +57,11 @@
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
-      margin-bottom: 25px;
+      margin-bottom: 20px;
+      align-items: center;
     }
 
-    select, button {
+    select {
       flex: 1 1 200px;
       padding: 12px;
       font-size: 14px;
@@ -58,11 +69,22 @@
       border-radius: 6px;
     }
 
-    button {
-      background-color: #c4161c;
-      color: white;
-      cursor: pointer;
-      flex: none;
+    .download-container {
+      text-align: right;
+      margin-bottom: 10px;
+    }
+
+    .download-link {
+      color: #c4161c;
+      text-decoration: none;
+      font-weight: bold;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+
+    .download-link:hover {
+      background-color: #ffeaea;
     }
 
     table {
@@ -93,12 +115,21 @@
     tr:hover {
       background-color: #f0f0f0;
     }
+
+    /* Ocultar columna MES visualmente */
+    th[data-col="MES"],
+    td[data-col="MES"] {
+      display: none;
+    }
   </style>
 </head>
 <body>
   <header>
     <img src="static/logo.png" alt="Logo AYA">
-    <h1>AYA Distribuciones - Registro de Sanciones</h1>
+    <div class="title-block">
+      <h1>Registro de Sanciones</h1>
+      <span>AYA Distribuciones</span>
+    </div>
   </header>
 
   <div class="search-container">
@@ -106,6 +137,9 @@
   </div>
 
   <div class="filters">
+    <select id="mesFilter">
+      <option value="">MES</option>
+    </select>
     <select id="detalleFilter">
       <option value="">DETALLE</option>
     </select>
@@ -118,7 +152,10 @@
     <select id="cargoFilter">
       <option value="">CARGO</option>
     </select>
-    <button onclick="descargarCSV()">Descargar CSV</button>
+  </div>
+
+  <div class="download-container">
+    <a href="#" class="download-link" onclick="descargarCSV()">Descargar CSV</a>
   </div>
 
   <table id="data-table">
@@ -142,9 +179,12 @@
       const thead = document.querySelector("#data-table thead");
       const tbody = document.querySelector("#data-table tbody");
 
-      thead.innerHTML = "<tr>" + headers.map(h => `<th>${h}</th>`).join("") + "</tr>";
+      thead.innerHTML = "<tr>" + headers.map(h => 
+        `<th data-col="${h}">${h}</th>`).join("") + "</tr>";
+
       tbody.innerHTML = datos.map(row =>
-        "<tr>" + row.map(celda => `<td>${celda}</td>`).join("") + "</tr>"
+        "<tr>" + row.map((celda, i) =>
+          `<td data-col="${headers[i]}">${celda}</td>`).join("") + "</tr>"
       ).join("");
     }
 
@@ -163,6 +203,7 @@
     function aplicarFiltros() {
       const termino = document.getElementById("search").value.toLowerCase();
       const filtros = {
+        "MES": document.getElementById("mesFilter").value,
         "DETALLE": document.getElementById("detalleFilter").value,
         "SANCION": document.getElementById("sancionFilter").value,
         "LOCALIDAD": document.getElementById("localidadFilter").value,
@@ -196,6 +237,7 @@
     document.addEventListener("DOMContentLoaded", async () => {
       await cargarCSV();
       renderTabla(rows);
+      actualizarFiltros("MES", "mesFilter");
       actualizarFiltros("DETALLE", "detalleFilter");
       actualizarFiltros("SANCION", "sancionFilter");
       actualizarFiltros("LOCALIDAD", "localidadFilter");
@@ -205,7 +247,7 @@
         renderTabla(aplicarFiltros());
       });
 
-      ["detalleFilter", "sancionFilter", "localidadFilter", "cargoFilter"].forEach(id => {
+      ["mesFilter", "detalleFilter", "sancionFilter", "localidadFilter", "cargoFilter"].forEach(id => {
         document.getElementById(id).addEventListener("change", () => {
           renderTabla(aplicarFiltros());
         });
