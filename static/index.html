@@ -48,9 +48,10 @@
       width: 100%;
       padding: 14px;
       font-size: 16px;
-      border: 1px solid #ccc;
       border-radius: 6px;
       box-sizing: border-box;
+      border: 0px solid #ccc;
+      box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.08);
     }
 
     .filters {
@@ -65,7 +66,8 @@
       flex: 1 1 180px;
       padding: 12px 14px;
       font-size: 14px;
-      border: 1px solid #ccc;
+      border: 0px solid #ccc;
+      box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.08);
       border-radius: 6px;
       background-color: #fff;
       color: #2c3e50;
@@ -143,7 +145,7 @@
     <img src="static/logo.png" alt="Logo AYA">
     <div class="title-block">
       <h1>Registro de Sanciones</h1>
-      <span>AYA Distribuciones</span>
+      <span>A Y A DISTRIBUCIONES E.I.R.L</span>
     </div>
   </header>
 
@@ -173,7 +175,9 @@
     let rows = [];
 
     async function cargarCSV() {
-      const response = await fetch("file.csv");
+      const response = await fetch("file.csv", {
+        headers: { 'Accept': 'text/csv; charset=utf-8' }
+      });
       const text = await response.text();
       const lines = text.trim().split("\n").filter(linea => linea.trim() !== "");
       headers = lines[0].split(";").map(h => h.trim());
@@ -225,7 +229,7 @@
 
     function descargarCSV() {
       const datos = aplicarFiltros();
-      let contenido = headers.join(";") + "\n";
+      let contenido = "\ufeff" + headers.join(";") + "\n"; // Añadir BOM
       contenido += datos.map(r => r.join(";")).join("\n");
 
       const blob = new Blob([contenido], { type: 'text/csv;charset=utf-8;' });
